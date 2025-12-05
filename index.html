@@ -2,9 +2,9 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Calculadora de Recuperación de Ingresos Hoteleros</title>
+  <title>Calculadora de recuperación de reservas de hotel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Calcule cuánto ingreso puede recuperar su hotel a través de la solución de One Journey.">
+  <meta name="description" content="Calcule cuánto ingreso por reservas puede recuperar su hotel a través de la solución de One Journey.">
   <style>
     :root {
       --bg: #f5f5f7;
@@ -80,6 +80,11 @@
       border-color: var(--accent);
       box-shadow: 0 0 0 1px rgba(17,24,39,0.08);
     }
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+    .row .field { flex: 1; }
     .btn {
       width: 100%;
       padding: 10px 14px;
@@ -143,28 +148,6 @@
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
     }
 
-    /* Toggle periodo (mensual/anual) */
-    .frequency-toggle {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 12px;
-      margin-bottom: 10px;
-    }
-    .frequency-toggle span {
-      color: var(--text-muted);
-    }
-    .frequency-toggle label {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      margin-bottom: 0;
-      cursor: pointer;
-    }
-    .frequency-toggle input[type="radio"] {
-      margin: 0;
-    }
-
     /* Fondo verde para la sección de recuperación */
     .results.recovery {
       background: rgba(182, 245, 168, 0.75);
@@ -180,6 +163,9 @@
       font-size: 16px;
       margin-bottom: 10px;
     }
+
+    @media (max-width: 480px) {
+    }
   </style>
 </head>
 <body>
@@ -188,20 +174,20 @@
     <div class="header">
       <div class="logo">
         <img
-          src="https://raw.githubusercontent.com/ianschwarz-del/non-rooms-recoup-calculator/refs/heads/main/logo.svg"
-          alt="Logotipo de One Journey"
+          src="https://raw.githubusercontent.com/ianschwarz-del/hotel-bookings-recoup-calculator/refs/heads/main/logo.svg"
+          alt="Logo One Journey"
           style="height:44px; width:auto;"
         >
       </div>
-      <h1>Calculadora de Recuperación de Ingresos Hoteleros</h1>
-      <p class="subtitle">
-        Calcule cuánto ingreso puede recuperar su hotel a través de<br>
+      <h1 id="titleText">Calculadora de recuperación de reservas de hotel</h1>
+      <p class="subtitle" id="subtitleText">
+        Calcule cuánto ingreso por reservas puede recuperar su hotel a través de<br>
         la solución de One Journey.
       </p>
     </div>
 
     <div class="form-section">
-      <label for="currency">Moneda</label>
+      <label for="currency" id="currencyLabel">Moneda</label>
       <select id="currency">
         <option value="USD" selected>USD ($)</option>
         <option value="EUR">EUR (€)</option>
@@ -211,63 +197,80 @@
         <option value="MXN">MXN ($)</option>
       </select>
 
-      <label for="department">Departamento</label>
-      <select id="department">
-        <option value="Spa" selected>Spa</option>
-        <option value="Alimentos y Bebidas">Alimentos y Bebidas</option>
-        <option value="Banquetes y Catering">Banquetes y Catering</option>
-        <option value="Ingresos Auxiliares de Habitaciones">Ingresos Auxiliares de Habitaciones</option>
-        <option value="Reuniones y Eventos">Reuniones y Eventos</option>
-        <option value="Tiendas y Retail">Tiendas y Retail</option>
-        <option value="Otros">Otros</option>
-      </select>
-
-      <div class="frequency-toggle">
-        <span>Periodo:</span>
-        <label>
-          <input type="radio" name="frequency" value="monthly" checked>
-          Mensual
-        </label>
-        <label>
-          <input type="radio" name="frequency" value="annual">
-          Anual
-        </label>
-      </div>
-
       <label for="vendorSpend" id="vendorLabel">
-        ¿Cuánto paga en facturas mensuales a proveedores para Spa?
+        Importe anual de reservas pagadas con tarjeta por huésped o tercero
       </label>
-      <input id="vendorSpend" type="text" placeholder="p. ej. 6.400.000">
+      <input id="vendorSpend" type="text" placeholder="p. ej. $6,400,000">
 
-      <!-- Paso 1: Impacto estimado -->
-      <div class="results" id="results" style="display:none;">
-        <h2>Impacto estimado</h2>
+      <label for="processingFee" id="processingFeeLabel">
+        ¿Cuál es la comisión promedio de tarjeta de crédito? (%)
+      </label>
+      <input id="processingFee" type="text" placeholder="p. ej. 2.9%">
 
-        <div class="metric">
-          <div class="metric-label" id="impactFeesLabel">
-            Importe de facturas mensuales pagadas para Spa
-          </div>
-          <div class="metric-value" id="feesPaidOut"></div>
+      <div class="row">
+        <div class="field">
+          <label for="adr" id="adrLabel">Tarifa diaria promedio (ADR)</label>
+          <input id="adr" type="number" min="0" step="1" placeholder="p. ej. 150">
+        </div>
+        <div class="field">
+          <label for="avgStay" id="avgStayLabel">Estancia media (noches)</label>
+          <input id="avgStay" type="number" min="1" step="0.5" placeholder="p. ej. 3" value="">
         </div>
       </div>
 
-      <!-- CTA entre paso 1 y 2 -->
+      <!-- Paso 1: Impacto estimado -->
+      <div class="results" id="results" style="display:none;">
+        <h2 id="impactHeading">Impacto estimado</h2>
+
+        <div class="metric">
+          <div class="metric-label" id="impactFeesLabel">Comisiones de tarjeta pagadas</div>
+          <div class="metric-value" id="feesPaidOut"></div>
+        </div>
+
+        <div class="metric">
+          <div class="metric-label" id="impactBookingsLabel">Reservas equivalentes perdidas</div>
+          <div class="metric-value" id="bookingsLostOut"></div>
+        </div>
+
+        <div class="metric">
+          <div class="metric-label" id="impactNightsLabel">Noches de habitación equivalentes perdidas</div>
+          <div class="metric-value" id="roomNightsLostOut"></div>
+        </div>
+      </div>
+
+      <!-- CTA entre paso 1 y paso 2 -->
       <button class="btn" id="calcBtn">¿Cuánto puedo recuperar?</button>
 
       <!-- Paso 2: Recuperación estimada con One Journey -->
       <div class="results recovery" id="recovery" style="display:none;">
-        <h2>Recuperación estimada con One Journey</h2>
+        <h2 id="recoveryHeading">Recuperación estimada con One Journey</h2>
 
         <div class="metric">
-          <div class="metric-label" id="recoveryFeesLabel">
-            Ingresos de Spa recuperados
-          </div>
+          <div class="metric-label" id="recoveryFeesLabel">Comisiones de tarjeta recuperadas</div>
           <div class="metric-value" id="recoveryFeesOut"></div>
+        </div>
+
+        <div class="metric">
+          <div class="metric-label" id="recoveryBookingsLabel">Reservas recuperadas</div>
+          <div class="metric-value" id="recoveryBookingsOut"></div>
+        </div>
+
+        <div class="metric">
+          <div class="metric-label" id="recoveryNightsLabel">Noches de habitación recuperadas</div>
+          <div class="metric-value" id="recoveryRoomNightsOut"></div>
+        </div>
+
+        <!-- NUEVO: Comisión equivalente reducida -->
+        <div class="metric">
+          <div class="metric-label" id="recoveryEquivalentFeeLabel">
+            Comisión equivalente de tarjeta de crédito
+          </div>
+          <div class="metric-value" id="recoveryEquivalentFeeOut"></div>
         </div>
 
         <div class="cta">
           <a id="ctaBook" href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ0_SfNn_0dmm3jf61l2naJiYS0r4ZzkgiMSl9UMR7t7cWxGMP9GUb0-DlV55cECPrzqR4GkmGvk" target="_blank" rel="noopener noreferrer">
-            Reserva ahora una revisión de 15 minutos
+            Reserva una revisión de 15 minutos
           </a>
         </div>
       </div>
@@ -277,130 +280,113 @@
 </div>
 
 <script>
-  // ---- utilidades de texto dinámico basadas en el departamento y periodo ----
-  function getSelectedDepartmentLabel() {
-    const sel = document.getElementById("department");
-    return sel.options[sel.selectedIndex].text || "Spa";
-  }
-
-  function getFrequency() {
-    const checked = document.querySelector('input[name="frequency"]:checked');
-    return checked ? checked.value : "monthly";
-  }
-
-  function periodWord() {
-    return getFrequency() === "monthly" ? "mensuales" : "anuales";
-  }
-
-  function updateDynamicLabels() {
-    const dept = getSelectedDepartmentLabel();
-    const period = periodWord();
-
-    document.getElementById("vendorLabel").textContent =
-      `¿Cuánto paga en facturas ${period} a proveedores para ${dept}?`;
-
-    document.getElementById("impactFeesLabel").textContent =
-      `Importe de facturas ${period} pagadas para ${dept}`;
-
-    document.getElementById("recoveryFeesLabel").textContent =
-      `Ingresos de ${dept} recuperados`;
-  }
-
-  // ---- parser numérico que soporta formatos ES / US ----
-  function parseLocalizedNumber(value) {
-    if (!value) return 0;
-    let str = value.toString().trim();
-    str = str.replace(/[^\d.,-]/g, "");
-    if (!str) return 0;
-
-    const hasComma = str.indexOf(",") !== -1;
-    const hasDot = str.indexOf(".") !== -1;
-
-    if (hasComma && hasDot) {
-      if (str.lastIndexOf(",") > str.lastIndexOf(".")) {
-        str = str.replace(/\./g, "");
-        let lastComma = str.lastIndexOf(",");
-        str = str.slice(0, lastComma).replace(/,/g, "") + "." + str.slice(lastComma + 1);
-      } else {
-        str = str.replace(/,/g, "");
-      }
-    } else if (hasComma) {
-      const parts = str.split(",");
-      if (parts[1] && parts[1].length > 2) {
-        str = str.replace(/,/g, "");
-      } else {
-        str = str.replace(",", ".");
-      }
-    } else if (hasDot) {
-      const parts = str.split(".");
-      if (parts[1] && parts[1].length > 2) {
-        str = str.replace(/\./g, "");
-      }
-    }
-
-    const num = parseFloat(str);
-    return isNaN(num) ? 0 : num;
-  }
-
+  // ---------- lógica del calculador ----------
   function formatCurrency(value, currencyCode) {
     if (isNaN(value)) return "-";
     return new Intl.NumberFormat(undefined, {
       style: "currency",
-      currency: currencyCode || "EUR",
+      currency: currencyCode || "USD",
       maximumFractionDigits: 0
     }).format(value);
   }
 
+  // vendorSpend: tratar como entero (eliminar todo menos dígitos)
+  // otros campos: permitir decimales (p. ej. 2.9 %)
   function getNumericFromInputById(id) {
     const el = document.getElementById(id);
     if (!el) return 0;
-    return parseLocalizedNumber(el.value);
+    let raw = el.value;
+
+    if (id === "vendorSpend") {
+      // "6.400.000", "6,400,000", "€ 6 400 000" -> "6400000"
+      raw = raw.replace(/[^0-9]/g, "");
+      return parseFloat(raw) || 0;
+    } else {
+      raw = raw.replace(/[^0-9.]/g, "");
+      return parseFloat(raw) || 0;
+    }
   }
 
   function getInputs() {
     const currency = document.getElementById("currency").value;
-    const invoiceAmount = getNumericFromInputById("vendorSpend");
-    return { currency, invoiceAmount };
+
+    const bookingAmount = getNumericFromInputById("vendorSpend");
+    const processingFee = getNumericFromInputById("processingFee");
+    const adr = parseFloat(document.getElementById("adr").value) || 0;
+    const avgStay = parseFloat(document.getElementById("avgStay").value) || 0;
+
+    return { currency, bookingAmount, processingFee, adr, avgStay };
   }
 
   function renderImpact() {
-    const { currency, invoiceAmount } = getInputs();
+    const { currency, bookingAmount, processingFee, adr, avgStay } = getInputs();
     const resultsEl = document.getElementById("results");
 
-    if (!(invoiceAmount > 0)) {
+    if (!(bookingAmount > 0 && processingFee > 0 && adr > 0 && avgStay > 0)) {
       resultsEl.style.display = "none";
       return;
     }
 
-    // Impacto = simplemente el importe total de facturas
+    const feeRate = processingFee / 100;
+    const feesPaid = bookingAmount * feeRate;
+
+    const revenuePerBooking = adr * avgStay;
+    const bookingsLost = revenuePerBooking > 0 ? feesPaid / revenuePerBooking : 0;
+    const roomNightsLost = bookingsLost * avgStay;
+
     document.getElementById("feesPaidOut").textContent =
-      formatCurrency(invoiceAmount, currency);
+      formatCurrency(feesPaid, currency);
+    document.getElementById("bookingsLostOut").textContent =
+      bookingsLost > 0 ? bookingsLost.toFixed(0) : "-";
+    document.getElementById("roomNightsLostOut").textContent =
+      roomNightsLost > 0 ? roomNightsLost.toFixed(0) : "-";
 
     resultsEl.style.display = "block";
   }
 
   function renderRecovery() {
-    const { currency, invoiceAmount } = getInputs();
+    const { currency, bookingAmount, processingFee, adr, avgStay } = getInputs();
     const recoveryEl = document.getElementById("recovery");
     const calcBtn = document.getElementById("calcBtn");
 
-    if (!(invoiceAmount > 0)) {
+    if (!(bookingAmount > 0 && processingFee > 0 && adr > 0 && avgStay > 0)) {
       recoveryEl.style.display = "none";
       return;
     }
 
-    // Cálculo solicitado: importe de facturas pagadas x 0,0125 (1,25 %)
-    const rebateRate = 0.0125;
-    const feesRecouped = invoiceAmount * rebateRate;
+    // USD y CAD -> 70%; resto (incl. EUR, GBP, etc.) -> 85%
+    const lowerPayout = ["USD", "CAD"];
+    const payoutRate = lowerPayout.includes(currency) ? 0.70 : 0.85;
+    const rebateRate = 0.0125; // 1,25 %
+
+    // Importe recuperado por One Journey
+    const feesRecouped = bookingAmount * payoutRate * rebateRate;
+
+    const revenuePerBooking = adr * avgStay;
+    const bookingsRecouped = revenuePerBooking > 0 ? feesRecouped / revenuePerBooking : 0;
+    const roomNightsRecouped = bookingsRecouped * avgStay;
 
     document.getElementById("recoveryFeesOut").textContent =
       feesRecouped > 0 ? formatCurrency(feesRecouped, currency) : "-";
+    document.getElementById("recoveryBookingsOut").textContent =
+      bookingsRecouped > 0 ? bookingsRecouped.toFixed(0) : "-";
+    document.getElementById("recoveryRoomNightsOut").textContent =
+      roomNightsRecouped > 0 ? roomNightsRecouped.toFixed(0) : "-";
+
+    // NUEVO: comisión equivalente reducida
+    const feeRate = processingFee / 100;
+    const feesPaid = bookingAmount * feeRate;
+    const effectiveFeeRate =
+      bookingAmount > 0 ? ((feesPaid - feesRecouped) / bookingAmount) * 100 : 0;
+
+    document.getElementById("recoveryEquivalentFeeOut").textContent =
+      effectiveFeeRate > 0 ? effectiveFeeRate.toFixed(2) + " %" : "-";
 
     recoveryEl.style.display = "block";
     calcBtn.style.display = "none";
   }
 
-  // helpers de formateo
+  // helpers de formato para inputs
   function formatVendorInputDisplay() {
     const currency = document.getElementById("currency").value;
     const el = document.getElementById("vendorSpend");
@@ -418,27 +404,31 @@
 
   function unformatVendorInput() {
     const el = document.getElementById("vendorSpend");
-    el.value = el.value.replace(/[^\d.,]/g, "");
+    el.value = el.value.replace(/[^0-9]/g, "");
   }
 
-  // eventos
-  document.getElementById("vendorSpend").addEventListener("input", renderImpact);
+  function formatPercentInputDisplay() {
+    const el = document.getElementById("processingFee");
+    const raw = el.value.replace(/[^0-9.]/g, "");
+    if (!raw) {
+      el.value = "";
+      return;
+    }
+    el.value = raw + "%";
+  }
+
+  function unformatPercentInput() {
+    const el = document.getElementById("processingFee");
+    el.value = el.value.replace(/[^0-9.]/g, "");
+  }
+
+  ["vendorSpend", "processingFee", "adr", "avgStay"].forEach(id => {
+    document.getElementById(id).addEventListener("input", renderImpact);
+  });
 
   document.getElementById("currency").addEventListener("change", function () {
     formatVendorInputDisplay();
     renderImpact();
-  });
-
-  document.getElementById("department").addEventListener("change", function () {
-    updateDynamicLabels();
-    renderImpact();
-  });
-
-  document.querySelectorAll('input[name="frequency"]').forEach(radio => {
-    radio.addEventListener("change", function () {
-      updateDynamicLabels();
-      renderImpact();
-    });
   });
 
   const vendorInput = document.getElementById("vendorSpend");
@@ -448,14 +438,18 @@
   });
   vendorInput.addEventListener("focus", unformatVendorInput);
 
+  const feeInput = document.getElementById("processingFee");
+  feeInput.addEventListener("blur", function () {
+    formatPercentInputDisplay();
+    renderImpact();
+  });
+  feeInput.addEventListener("focus", unformatPercentInput);
+
   document.getElementById("calcBtn").addEventListener("click", function () {
     renderImpact();
     renderRecovery();
     document.getElementById("recovery").scrollIntoView({ behavior: "smooth" });
   });
-
-  // inicializar etiquetas dinámicas
-  updateDynamicLabels();
 </script>
 
 </body>

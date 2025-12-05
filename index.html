@@ -220,7 +220,11 @@
       <div class="language-switch">
         <label for="language" id="languageLabel">Language</label>
         <select id="language">
+          <option value="en">🌐 EN</option>
           <option value="es" selected>🌐 ES</option>
+          <option value="fr">🌐 FR</option>
+          <option value="de">🌐 DE</option>
+          <option value="ar">🌐 AR</option>
         </select>
       </div>
       <h1 id="titleText">Hotel Bookings Recoup Calculator</h1>
@@ -233,8 +237,8 @@
     <div class="form-section">
       <label for="currency" id="currencyLabel">Currency</label>
       <select id="currency">
-        <option value="USD" selected>USD ($)</option>
-        <option value="EUR">EUR (€)</option>
+        <option value="USD">USD ($)</option>
+        <option value="EUR" selected>EUR (€)</option>
         <option value="GBP">GBP (£)</option>
         <option value="AED">AED (د.إ)</option>
         <option value="CAD">CAD ($)</option>
@@ -656,12 +660,12 @@
     document.getElementById("recovery").scrollIntoView({ behavior: "smooth" });
   });
 
-  // language change handler (now effectively locked to ES, but kept for consistency)
+  // language change handler
   document.getElementById("language").addEventListener("change", function () {
     applyLanguage(this.value);
   });
 
-  // initial language: Spanish only
+  // initial language: Spanish, with EUR pre-selected in the markup
   applyLanguage("es");
 </script>
 
